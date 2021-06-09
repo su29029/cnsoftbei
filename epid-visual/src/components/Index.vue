@@ -89,7 +89,6 @@
         });
 
         var option = {
-          
           title: {
             text: 'USA Covid-19 Estimates',
             left: 'right'
@@ -99,10 +98,10 @@
             showDelay: 0,
             transitionDuration: 0.2,
             formatter: function (params) {
-              var cases = (params.data.value[1] + '').split('.');
+              var cases = (params.data.value[0] + '').split('.');
               cases = cases[0].replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g, '$1,');
-              var death = (params.data.value[0] + '').split('.');
-              death = death[0].replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g, '$1,');
+              var death = (params.data.value[1] + '').split('.');
+              death = death[1].replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g, '$1,');
               return params.data.name + '<br/>' + 'cases: ' + cases + '<br/>' + 'death: ' + death;
             }
           },
@@ -156,7 +155,7 @@
             label: {
               show: true,
             },
-          },      
+          },
           series: [
             {
               type: "map",
@@ -241,15 +240,7 @@
         };
         this.echart.setOption(option);
         
-        this.loading = true;
-        fetch(`http://34.96.239.6:8111/api/search?string=${this.searchString}`).then( res => {
-          return res.json();
-        }).then( res => {
-          console.log(res);
-        }).catch( err => {
-          throw new Error(err);
-        })
-        this.loading = false;
+        
       },
       dealWithData: function () {
         // var geoCoordMap = {
@@ -287,10 +278,16 @@
         //   武汉: { geo: [114.31, 30.52], case: {confirmed: 10486, death: 208} },
         // };
         var data = [];
-        if (this.searchString && geoCoordMap[this.searchString])
-          data.push({ name: this.searchString, value: geoCoordMap[this.searchString].geo, case: geoCoordMap[this.searchString].case });
-        
-        return data;
+        this.loading = true;
+        fetch(`http://34.96.239.6:8111/api/search?string=${this.searchString}`).then( res => {
+          return res.json();
+        }).then( res => {
+          data.push({ name: this.searchString, value: res.geo, case: res.case })
+          console.log(res);
+        }).catch( err => {
+          throw new Error(err);
+        })
+        this.loading = false;
       }
     },
   }
